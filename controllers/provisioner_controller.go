@@ -190,6 +190,14 @@ func (r *ProvisionerReconciler) deployJob(node *corev1.Node, req ctrl.Request) (
 			},
 		},
 	}
+
+	// Configure the cgroup driver information for the node installer if provided
+	if val, exists := os.LookupEnv("SYSTEMD_CGROUP"); exists {
+		dep.Spec.Template.Spec.Containers[0].Env = append(dep.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
+			Name:  "SYSTEMD_CGROUP",
+			Value: val,
+		})
+	}
 	if err := ctrl.SetControllerReference(node, dep, r.Scheme); err != nil {
 		return nil, fmt.Errorf("failed to set controller reference: %w", err)
 	}
